@@ -1,6 +1,4 @@
-﻿
-
-//Гра відбувається на прямокутному полі. Розмір поля вибирається гравцем. Поле складається з клітин. У кожної клітини є 8 сусідів. Правила такі:
+﻿//Гра відбувається на прямокутному полі. Розмір поля вибирається гравцем. Поле складається з клітин. У кожної клітини є 8 сусідів. Правила такі:
 //-жива клітина, у якій є менше ніж дві живі клітини серед сусідів, вмирає.
 //- жива клітина, у якій більш ніж три живі клітини серед сусідів, також вмирає.
 //- жива клітина, у якій дві або три живі клітини серед сусідів, продовжує жити.
@@ -101,7 +99,55 @@ void Field::Print_Console()
 void Field::Game_Cycle_Graphic()
 {
     window.create(VideoMode(width * sizeTile, height * sizeTile), "Life"); //размеры окна=размер тайла умноженный на высоту и ширину карты
-    // сюда вставить код из ссылки от while(window.isOpen())... до window.clear()
+    while (window.isOpen())
+    {
+        time = clock.getElapsedTime().asSeconds();
+
+        Event event;
+
+        while (window.pollEvent(event)) if (event.type == Event::Closed) window.close();
+
+        Vector2i pixelPos = Mouse::getPosition(window); //позиция мышки относительно окна
+        Vector2f pos = window.mapPixelToCoords(pixelPos);
+
+        if (Mouse::isButtonPressed(Mouse::Left)) // рисование "живых" тайлов по лкм. 
+        {
+            world[int(pos.x / sizeTile)][int(pos.y / sizeTile)] = true;
+            nextStep[int(pos.x / sizeTile)][int(pos.y / sizeTile)] = true;
+        }
+
+        if (Keyboard::isKeyPressed(Keyboard::LAlt))//ввод "задержки" на левый альт. Можно поменять на что-то другое. Список можно увидеть написав Keyboard:: 
+        {
+            std::cout << "Enter interval (as seconds): ";
+            std::cin >> interval;
+        }
+        if (Keyboard::isKeyPressed(Keyboard::Space) && interval <= time)// основной цикл переопределения "живых" тайлов по нажатию пробела
+        {
+            clock.restart();
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                { //в переменную neighbours складываем 8 соседских клеток(0 или 1), (i+width+1)%width а не просто i+1 потому что карта замкнутая
+                    neighbours = world[(i + width - 1) % width][j] + world[(i + width + 1) % width][j] + world[i][(j + height - 1) % height] + world[i][(j + height + 1) % height] + world[(i + width - 1) % width][(j + height - 1) % height] + world[(i + width + 1) % width][(j + height - 1) % height] + world[(i + width - 1) % width][(j + height + 1) % height] + world[(i + width + 1) % width][(j + height + 1) % height];
+                    if (world[i][j] == true)
+                    { //если в текущем поколений клетка жива
+                        if (neighbours < 2 || neighbours > 3)
+                            nextStep[i][j] = false; //если соседей больше 3 или меньше 2 то клетка в следющем ходу умирает
+                    }
+                    else if (neighbours == 3)
+                        nextStep[i][j] = true; //если 3 живых соседей то в следующем шаге рождается клетка
+                }
+            }
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    world[i][j] = nextStep[i][j]; //копируем массив nextStep в world
+                }
+            }
+        }
+        this->Clear_Window();
+    }
 }
 void Field::Clear_Window()//по сути это не clear a print, можно переименовать
 {
