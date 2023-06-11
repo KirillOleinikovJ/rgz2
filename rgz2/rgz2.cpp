@@ -1,4 +1,4 @@
-﻿//Гра відбувається на прямокутному полі. Розмір поля вибирається гравцем. Поле складається з клітин. У кожної клітини є 8 сусідів. Правила такі:
+//Гра відбувається на прямокутному полі. Розмір поля вибирається гравцем. Поле складається з клітин. У кожної клітини є 8 сусідів. Правила такі:
 //-жива клітина, у якій є менше ніж дві живі клітини серед сусідів, вмирає.
 //- жива клітина, у якій більш ніж три живі клітини серед сусідів, також вмирає.
 //- жива клітина, у якій дві або три живі клітини серед сусідів, продовжує жити.
@@ -11,6 +11,7 @@
 #include <iostream>
 #include<fstream>
 #include<SFML/Graphics.hpp>//ссылка на либу: https://www.sfml-dev.org/index.php 
+#include<conio.h>
 // туториал по подключению либы в visual studio: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
 using namespace sf;
 class Field
@@ -73,8 +74,65 @@ Field::Field()//конструктор, задаёт динамические м
 }
 void Field::Game_Cycle_Console()
 {
-    this->File_Input_Param();// ввод матрицы из файла, можно заменить на ввод юзером
-    //TODO консольную версию игры
+    std::cout << "Enter 1 to input matrix manualy or 2 to take it from file\n";
+    char c;
+    std::cin >> c;
+    if (c == '1') this->User_Input_Param();
+    else if(c=='2') this->File_Input_Param();// ввод матрицы из файла, можно заменить на ввод юзером
+    std::cout << "\nGame starts:\n";
+    for (int i = 0; i < width; i++, std::cout << std::endl) 
+    {
+        for (int j = 0; j < height; j++)
+            std::cout << world[i][j] << "\t";
+    }
+    std::cout << std::endl;
+    while (true)
+    {
+        char ch = _getch();
+        std::cout << "Press 0 to stop the game or any other button to continue\n";
+        if (ch == '0') break;
+        int c = 0;
+        for (int i = 1; i < width - 1; i++)
+            for (int j = 1; j < height - 1; j++)
+            {
+                neighbours = 0;
+                if (world[i - 1][j] == 1)
+                    neighbours++;
+                if (world[i + 1][j] == 1)
+                    neighbours++;
+                if (world[i][j - 1] == 1)
+                    neighbours++;
+                if (world[i][j + 1] == 1)
+                    neighbours++;
+                if (world[i - 1][j - 1] == 1)
+                    neighbours++;
+                if (world[i - 1][j + 1] == 1)
+                    neighbours++;
+                if (world[i + 1][j - 1] == 1)
+                    neighbours++;
+                if (world[i + 1][j + 1] == 1)
+                    neighbours++;
+                if (neighbours != 2 && neighbours != 3 && world[i][j] == 1)
+                {
+                    c++;
+                    world[i][j] = 0;
+                }
+                else if ((neighbours == 2 || neighbours == 3) && world[i][j] == 0)
+                {
+                    c++;
+                    world[i][j] = 1;
+                }
+            }
+        if (c == 0)
+        {
+            std::cout << "Game ended!\n";
+            break;
+        }
+        for (int i = 0; i < width; i++, std::cout << std::endl)
+            for (int j = 0; j < height; j++)
+                std::cout << world[i][j] << "\t";
+        std::cout << std::endl;
+    }
 }
 void Field::File_Input_Param()
 {
@@ -85,6 +143,15 @@ void Field::File_Input_Param()
     {
         for (int j = 0; j < height; j++)
             fin >> world[i][j];
+    }
+    for (int i = 1; i < width; i++)
+    {
+        for (int j = 1; j < height; j++)
+        {
+            //std::cin >> world[i][j];
+            if (world[i][j] != 1 && world[i][j] != 0)
+                world[i][j] = 0;
+        }
     }
 }
 void Field::Print_Console()
@@ -99,6 +166,7 @@ void Field::Print_Console()
 void Field::Game_Cycle_Graphic()
 {
     window.create(VideoMode(width * sizeTile, height * sizeTile), "Life"); //размеры окна=размер тайла умноженный на высоту и ширину карты
+    // сюда вставить код из ссылки от while(window.isOpen())... до window.clear()
     while (window.isOpen())
     {
         time = clock.getElapsedTime().asSeconds();
