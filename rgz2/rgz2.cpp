@@ -1,3 +1,4 @@
+
 //Гра відбувається на прямокутному полі. Розмір поля вибирається гравцем. Поле складається з клітин. У кожної клітини є 8 сусідів. Правила такі:
 //-жива клітина, у якій є менше ніж дві живі клітини серед сусідів, вмирає.
 //- жива клітина, у якій більш ніж три живі клітини серед сусідів, також вмирає.
@@ -8,11 +9,12 @@
 //На кожному кроці відображається поле, що складається з клітин.
 //Кожна клітина відображається цифрою або кольором(якщо готові зробити графічне представлення), 
 //що відповідає стану клітини.
+
 #include <iostream>
 #include<fstream>
 #include<SFML/Graphics.hpp>//ссылка на либу: https://www.sfml-dev.org/index.php 
-#include<conio.h>
 // туториал по подключению либы в visual studio: https://www.sfml-dev.org/tutorials/2.5/start-vc.php
+#include<conio.h>
 using namespace sf;
 class Field
 {
@@ -32,17 +34,16 @@ public:
     void Game_Cycle_Console();//консольная версия игры
     void Game_Cycle_Graphic();//графическая
     void Clear_Window();//перерисовка графического окна (на каждом ходу)
-    void User_Input_Param(); //нужно дописать ввод матрицы юзером
-    void File_Input_Param();//ввод матрицы из файла
+    void User_Input(); //нужно дописать ввод матрицы юзером
+    void File_Input();//ввод матрицы из файла
     void Set_Mode() { std::cin >> mode; }//ну тут понятно вроде
     void Print_Console();//принт матрицы в консоль
-    //можно добавить больше сеттеров для отдельніх полей класса а так я хз что ещё тут надо
     ~Field()//деструктор удаляет двумерные динамические массивы
     {
         for (int i = 0; i < width; i++)
         {
             delete[] world[i];
-            delete[] nextStep[i];
+            //delete[] nextStep[i];
         }
         delete[]world;
         delete[]nextStep;
@@ -77,8 +78,8 @@ void Field::Game_Cycle_Console()
     std::cout << "Enter 1 to input matrix manualy or 2 to take it from file\n";
     char c;
     std::cin >> c;
-    if (c == '1') this->User_Input_Param();
-    else if(c=='2') this->File_Input_Param();// ввод матрицы из файла, можно заменить на ввод юзером
+    if (c == '1') this->User_Input();
+    else if (c == '2') this->File_Input();// ввод матрицы из файла, можно заменить на ввод юзером
     std::cout << "\nGame starts:\n";
     for (int i = 0; i < width; i++, std::cout << std::endl) {
         for (int j = 0; j < height; j++)
@@ -133,7 +134,7 @@ void Field::Game_Cycle_Console()
         std::cout << std::endl;
     }
 }
-void Field::User_Input_Param()
+void Field::User_Input()
 {
     int width, height;
     std::cout << "Enter field size\n";
@@ -141,7 +142,7 @@ void Field::User_Input_Param()
     std::cin >> width;
     std::cout << "Height=";
     std::cin >> height;
-    std::cout << "\nEnter cell states(1 if alive, 0 if dead, if you enter any other number-it will be count  dead):\width";
+    std::cout << "\nEnter cell states(1 if alive, 0 if dead, if you enter any other number-it will be count  dead):\n";
     width += 2;
     height += 2;
     for (int i = 0, j = width - 1, s = 0; s < height; s++) //заполнение по горизонтальнім краям
@@ -163,7 +164,7 @@ void Field::User_Input_Param()
         }
     }
 }
-void Field::File_Input_Param()
+void Field::File_Input()
 {
     std::ifstream fin;
     fin.open("Input.txt", std::ios::in);//можно переделать чтобы был string filename; fin.open(filename,in)
@@ -177,7 +178,6 @@ void Field::File_Input_Param()
     {
         for (int j = 1; j < height; j++)
         {
-            //std::cin >> world[i][j];
             if (world[i][j] != 1 && world[i][j] != 0)
                 world[i][j] = 0;
         }
@@ -272,5 +272,3 @@ int main()
         game.Game_Cycle_Graphic();
     return 0;
 }
-
-
